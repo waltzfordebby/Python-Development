@@ -1,0 +1,43 @@
+python 
+from flaskblog.models import Post
+posts = Post.query.all() # Get all the post using query.all()
+for post in posts:
+	print(post)
+
+posts = Post.query.paginate() #Get all the post but using paginate method
+posts
+dir(posts) #Get all the function you can use in paginate method
+posts.per_page #Get the default number of post you can view per page
+posts.page #Get the current page
+for post in posts.items #Loop on the posts items and print it
+	print(post)
+
+posts = Post.query.paginate(page=2) #Get the second page of the post query
+for post in posts.items #Print the posts form posts.items
+	print(post)
+
+posts = Post.query.paginate(per_page=5) #Set the post query to have 5 per page
+posts.page #Get the current page
+for post in posts.items: #Print the posts form posts.items
+	print(post)
+
+posts = Post.query.paginate(per_page=5, page=2) #Set the query to have 5 posts per page and go to page 2
+posts.page
+
+for post in posts.items: #Print the posts form posts.items
+	print(post)
+
+posts.total #Get the total number of posts
+
+#Iterpage
+from flaskblog.models import Port
+posts = Post.query.paginate(page=6, per_page=2)
+for page in posts.iter_pages():
+	print(page)
+
+
+routes.py
+home.html
+user_posts.html
+
+python 

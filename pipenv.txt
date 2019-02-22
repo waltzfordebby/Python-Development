@@ -1,0 +1,20 @@
+pipenv isntall -r /path = add the dependencies form requirements.txt
+
+pipenv lock -r = display the dependencies from pipenv
+
+pipenv --python 3.6 = change the python version of virtual environment
+
+pipenv --rm = Remove the virtual environment
+
+pipenv install = Install the pipenv and apply the changes you added to pipfile
+
+pipenv --venv = Show the path of virtual environment
+
+pipenv check = Check if the dependencies have update
+
+pipenv graph = To see what depends on what
+
+pipenv lock = To update the pip env lock base from the changes you created on pipfile
+
+pipenv install --ignore-pipfile = install the dependencies from pipfile lock
+
