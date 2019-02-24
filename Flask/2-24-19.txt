@@ -5,6 +5,7 @@ token = s.dumps({'user_id':1}).decode('utf-8') #dump the token from the serializ
 token #print the whole token
 s.loads(token) #print the user that holds the token
 
+forms.py
 routes.py
 models.py
 reset_request.html
