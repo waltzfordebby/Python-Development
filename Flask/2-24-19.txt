@@ -1,0 +1,13 @@
+python #run python
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer #import itsdangerous to generate token
+s = Serializer('secret', 30) #create a token base on 'secret' with 30 seconds expiration
+token = s.dumps({'user_id':1}).decode('utf-8') #dump the token from the serializer on token variable
+token #print the whole token
+s.loads(token) #print the user that holds the token
+
+routes.py
+models.py
+reset_request.html
+reset_token.html
+__init__.py
+pipenv install flask-mail
