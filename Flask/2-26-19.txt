@@ -1,0 +1,188 @@
+Setting hostname
+	hostnamectl set-hostname flask-server
+
+	nano /etc/hosts
+		Under the 127.0.0.1 localhost
+			45.33.123.214 flask-server
+
+	Add User
+		adduser <username>
+		Enter the password
+		adduser <username_you_created> sudo
+
+	Logout on root
+
+	Login using the user you created
+
+	ssh <username_you_created>@45.33.123.214
+
+	Creating ssh
+		On the server
+			pwd - On the home folder
+			mkdir .ssh
+
+		On the your local device
+			ssh-keygen -b 4096
+
+			scp ~/.ssh/id_rsa.pub <username_you_created@45.33.123.214:~/.ssh/authorized_keys
+
+		Check if the ssh pub key is added
+			ls .ssh
+
+			Change the permissions for ssh directory
+				sudo chmod 700 ~/.ssh/
+
+			Change the permissions of all the files inside the ssh directories
+				sudp chmod 600 ~/.ssh/*
+
+	Exit the server to test the ssh
+		ssh <username_you_created>@45.33.123.214
+
+
+	Change the configuration of ssh
+		sudo nano /etc/ssh/sshd_config
+			Set and uncomment "PermitRootLogin no"
+			Set and uncomment "PasswordAuthentication no"
+
+	Restart ssh server
+		sudo systemctl restart sshd
+
+	Setup a firewall on your server
+		sudo apt install ufw
+
+		sudo ufw default allow outgoing
+		sudo ufw default deny incoming
+
+		Configure allow rules
+			sudo ufw allow ssh
+			sudo ufw allow allow 5000
+
+			sudo ufw enable
+			sudo ufw status
+
+	Go to local machine terminal
+		Create a requirements.txt
+			pip freeze > requirements.txt
+
+
+	Go to webserver
+		Copy the flask app to your web server
+			scp -r Desktop/Flask_Blog <username_you_created>@45.33.123.214:~/
+
+	Check if the flask app is copied
+		ls 
+
+	Create a virtual environment
+		sudo apt install python3-pip
+		sudo apt install python3-venv
+
+		python 3 -m venv Flask_Blog/venv
+
+		cd Flask_Blog/
+			ls
+			source venv/bin/active
+			pip install -r requirements
+
+
+	Setting environment variables
+
+		Go to local machine, to get environment variables
+			python
+				import os
+				os.environ.get('SECRET_KEY')
+				os.environ.get('SQLALCHEMY_DATABASE_URI')
+				os.environ.get('EMAIL_USER')
+				os.environ.get('EMAIL_PASS')
+
+		Go to web server
+			sudo touch /etc/config.json
+			sudo nano /etc/config.json
+				{
+					"SECRET_KEY": "THE SECRET KEY",
+					"SQLACLCHEMY_DATABASE_URI": "sqlite:///site.db",
+					"EMAIL_USER":"EMAIL_USER",
+					"EMAIL_PASS":"EMAIL_PASS"
+
+				}
+
+			ls 
+			ls flaskblog
+
+			sudo nano config.py
+				import json
+
+				with open('/etc/config.json') as config_file:
+					config = json.load(config_file) # convert the json to dictionary
+
+
+				class Config:
+					SECRET_KEY = config.get('SECRET_KEY')
+					SQLALCHEMY_DATABASE_URI = config.get('SQLALCHEMY_DATABASE_URI')
+					MAIL_USERNAME = config.get('EMAIL_USER')
+					MAIL_PASSWORD = config.get('EMAIL_PASS')
+
+
+	Running flask app on web server
+		export FLASK_APP=run.py
+		flask run--host=0.0.0.0
+
+	Go to the IP Address of the web server
+		45.33.123.214:5000
+
+		Test the app
+
+	Install nginx and gunicorn
+		Go to home directory
+			sudo apt install nginx 
+			pip install gunicorn
+
+		Update the configuration of nginx
+
+			sudo rm /etc/nginx/sites-enabled/default # Remove the default file
+			sudo nano /etc/nginx/sites-enabled/flaskblog
+				server{
+					listen 80;
+					server_name 45.33.123.214;
+
+					location /static {
+						alias /home/<username>/Flask_Blog/flaskblog/static;
+					}
+
+					location / {
+						proxy_pass http://localhost:8000;
+						include /etc/nginx/proxy_params;
+						proxy_redirect off;
+					}
+				}
+
+			sudo ufw allow http/tcp
+			sudo ufw delete allow 5000
+			sudo ufw enable
+			sudo systemctl restart nginx
+
+		Setting up gunicorn
+
+		nproc --all # To get the number of cores of your system
+		(2 x num_cores) + 1 # To get the number of workers you need
+
+		cd Flask_Blog/
+			ls
+			cat run.py
+
+			gunicorn -w 3 run:app
+
+		Install supervisor
+			sudo apt install supervisor
+
+			Create configuration file for supervisor
+				sudo nano /etc/supervisor/conf.d/flaskblog.conf
+					[program:flaskblog]
+					directory=/home/<username>/Flask_Blog
+					command=/home/username/Flask_Blog/venv/bin/gunicorn -w 3 run:app
+					user=<username>
+					autostart=true
+					autorestart=true
+					stopasgroup=true
+					killasgroup=true
+					stderr_logfile=/var/log/flaskblog/flaskblog.err.log
+					stdout_logfile=/var/log/flaskblog/flaskblog.out.log
